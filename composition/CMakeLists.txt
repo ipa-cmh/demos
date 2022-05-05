@@ -17,6 +17,8 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 
 include_directories(include)
 
@@ -78,6 +80,20 @@ ament_target_dependencies(client_component
 rclcpp_components_register_nodes(client_component "composition::Client")
 set(node_plugins "${node_plugins}composition::Client;$<TARGET_FILE:client_component>\n")
 
+add_library(lifecycle_talker_component SHARED
+  src/lifecycle_talker_component.cpp)
+target_compile_definitions(lifecycle_talker_component
+  PRIVATE "COMPOSITION_BUILDING_DLL")
+ament_target_dependencies(lifecycle_talker_component
+  "example_interfaces"
+  "rclcpp"
+  "rclcpp_components"
+  "rclcpp_lifecycle"
+  "lifecycle_msgs"
+  )
+rclcpp_components_register_nodes(lifecycle_talker_component "composition::LifecycleTalker")
+set(node_plugins "${node_plugins}composition::LifecycleTalker;$<TARGET_FILE:client_component>\n")
+
 # since the package installs libraries without exporting them
 # it needs to make sure that the library path is being exported
 if(NOT WIN32)
@@ -123,6 +139,7 @@ ament_target_dependencies(dlopen_composition
 
 install(TARGETS
   talker_component
+  lifecycle_talker_component
   listener_component
   node_like_listener_component
   server_component
